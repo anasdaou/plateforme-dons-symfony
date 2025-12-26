@@ -5,7 +5,9 @@
 {% block body %}
     <div class="container my-5">
         <h1 class="mb-4">Campagnes de dons</h1>
-
+            <a href="{{ path('campaign_propose') }}" class="btn btn-success mb-4">
+                Proposer une campagne
+            </a>
         {% if campaigns is empty %}
             <div class="alert alert-info">
                 Aucune campagne pour le moment.

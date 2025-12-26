@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Proposer une campagne{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <a href="{{ path('app_home') }}">&larr; Retour à l’accueil</a>
+
+        <h1 class="mt-3">Proposer une nouvelle campagne</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="mt-4">
+            {{ form_start(form) }}
+                {{ form_row(form.title) }}
+                {{ form_row(form.description) }}
+                {{ form_row(form.targetAmount) }}
+                {{ form_row(form.proposerName) }}
+                {{ form_row(form.proposerEmail) }}
+
+                <button class="btn btn-primary mt-3">Envoyer la proposition</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
