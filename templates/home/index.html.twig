@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plateforme de dons{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <h1 class="mb-4">Campagnes de dons</h1>
+
+        {% if campaigns is empty %}
+            <div class="alert alert-info">
+                Aucune campagne pour le moment.
+            </div>
+        {% else %}
+            <div class="row">
+                {% for campaign in campaigns %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ campaign.title }}</h5>
+                                <p class="card-text">
+                                    {{ campaign.description|slice(0, 120) }}{% if campaign.description|length > 120 %}...{% endif %}
+                                </p>
+
+                                {# Calcul du pourcentage de progression #}
+                                {% set percent = 0 %}
+                                {% if campaign.targetAmount > 0 %}
+                                    {% set percent = (campaign.collectedAmount / campaign.targetAmount * 100)|round(0, 'floor') %}
+                                {% endif %}
+
+                                <p class="mb-1">
+                                    Objectif : <strong>{{ campaign.targetAmount }} MAD</strong><br>
+                                    Collecté : <strong>{{ campaign.collectedAmount }} MAD</strong>
+                                </p>
+
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: {{ percent }}%;"
+                                         aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ percent }}%
+                                    </div>
+                                </div>
+
+                                {# On mettra les vrais liens plus tard #}
+                                <a href="#" class="btn btn-primary btn-sm disabled" aria-disabled="true">
+                                    Faire un don (à venir)
+                                </a>
+                                <a href="{{ path('campaign_show', { id: campaign.id }) }}">
+                                    Détails
+                                </a>
+
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
