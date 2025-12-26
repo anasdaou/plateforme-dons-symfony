@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement PayPal{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <a href="{{ path('campaign_show', {id: campaign.id}) }}">&larr; Retour à la campagne</a>
+
+        <h1 class="mt-3">Paiement via PayPal</h1>
+
+        <p>Vous allez payer <strong>{{ donation.amount }} MAD</strong> pour la campagne :
+            <strong>{{ campaign.title }}</strong></p>
+
+        <form method="post">
+            <div>
+                <label>Adresse e-mail PayPal :</label><br>
+                <input type="email" name="paypal_email" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Payer avec PayPal</button>
+        </form>
+    </div>
+{% endblock %}

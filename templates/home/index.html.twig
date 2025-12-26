@@ -41,9 +41,10 @@
                                 </div>
 
                                 {# On mettra les vrais liens plus tard #}
-                                <a href="#" class="btn btn-primary btn-sm disabled" aria-disabled="true">
-                                    Faire un don (à venir)
+                                <a href="{{ path('campaign_donate', {id: campaign.id}) }}">
+                                    Faire un don
                                 </a>
+
                                 <a href="{{ path('campaign_show', { id: campaign.id }) }}">
                                     Détails
                                 </a>

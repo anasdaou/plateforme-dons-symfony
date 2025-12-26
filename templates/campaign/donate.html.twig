@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Faire un don - {{ campaign.title }}{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <a href="{{ path('campaign_show', {id: campaign.id}) }}">&larr; Retour à la campagne</a>
+
+        <h1 class="mt-3">Faire un don pour : {{ campaign.title }}</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success mt-3">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="mt-4">
+            {{ form_start(form) }}
+                {{ form_row(form.amount) }}
+                {{ form_row(form.donorName) }}
+                {{ form_row(form.donorEmail) }}
+                {{ form_row(form.paymentMethod) }}
+
+                <button class="btn btn-primary mt-3">Valider le don</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

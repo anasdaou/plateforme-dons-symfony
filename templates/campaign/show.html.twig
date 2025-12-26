@@ -25,9 +25,10 @@
 
         <hr>
 
-        <a href="#" class="btn btn-primary disabled">
-            Faire un don (bientôt)
+        <a href="{{ path('campaign_donate', {id: campaign.id}) }}" class="btn btn-primary">
+            Faire un don
         </a>
+
 
     </div>
 {% endblock %}
