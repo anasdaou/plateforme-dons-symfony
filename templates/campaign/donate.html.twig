@@ -3,6 +3,8 @@
 {% block title %}Faire un don - {{ campaign.title }}{% endblock %}
 
 {% block body %}
+    {% form_theme form 'bootstrap_5_layout.html.twig' %}
+
     <div class="container my-5">
         <a href="{{ path('campaign_show', {id: campaign.id}) }}" class="btn btn-link mb-3">
             &larr; Retour à la campagne
@@ -17,17 +19,36 @@
 
         <div class="card mt-4">
             <div class="card-body">
-                {# Affiche les erreurs globales du formulaire #}
-                {{ form_start(form) }}
 
-                    {{ form_row(form.amount) }}
-                    {{ form_row(form.donorName) }}
-                    {{ form_row(form.donorEmail) }}
-                    {{ form_row(form.paymentMethod) }}
+                {# 🔴 message d'erreur personnalisé venant du contrôleur #}
+                {% if errorMessage is defined and errorMessage %}
+                    <div class="alert alert-danger mb-3">
+                        {{ errorMessage }}
+                    </div>
+                {% endif %}
+
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                    <div class="mb-3">
+                        {{ form_row(form.amount) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.donorName) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.donorEmail) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.paymentMethod) }}
+                    </div>
 
                     <button class="btn btn-primary mt-3">
                         Continuer vers le paiement
                     </button>
+
                 {{ form_end(form) }}
             </div>
         </div>

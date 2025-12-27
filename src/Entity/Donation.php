@@ -15,17 +15,15 @@ class Donation
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Assert\NotNull(message: "Le montant est obligatoire.")]
-    #[Assert\Positive(message: "Le montant doit être strictement supérieur à 0.")]
+    #[Assert\NotBlank(message: "Le montant est obligatoire.")]
+    #[Assert\Positive(message: "Le montant doit être supérieur à 0.")]
     #[Assert\GreaterThanOrEqual(
         value: 10,
         message: "Le montant minimum de don est de 10 MAD."
     )]
-    #[Assert\LessThanOrEqual(
-        value: 1000000,
-        message: "Le montant maximum de don est de 1 000 000 MAD."
-    )]
     private ?float $amount = null;
+
+
 
 
 

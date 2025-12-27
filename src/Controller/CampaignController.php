@@ -22,29 +22,36 @@ class CampaignController extends AbstractController
     }
 
     #[Route('/campaign/{id}/donate', name: 'campaign_donate')]
-    public function donate(
-        Campaign $campaign,
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
-        // 🔒 1) Si l'utilisateur n'est pas connecté, on l'envoie au login
-        if (!$this->getUser()) {
-            $this->addFlash('warning', 'Vous devez vous connecter ou créer un compte pour effectuer un don.');
+public function donate(
+    Campaign $campaign,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    // 🔒 si l'utilisateur n'est pas connecté
+    if (!$this->getUser()) {
+        $this->addFlash('warning', 'Vous devez vous connecter ou créer un compte pour effectuer un don.');
+        return $this->redirectToRoute('app_login');
+    }
 
-            return $this->redirectToRoute('app_login');
-        }
+    $donation = new Donation();
+    $donation->setCampaign($campaign);
+    $donation->setCreatedAt(new \DateTimeImmutable());
+    $donation->setUser($this->getUser());
 
-        // 🔓 2) Si l'utilisateur est connecté, on continue le flux normal de don
-        $donation = new Donation();
-        $donation->setCampaign($campaign);
-        $donation->setCreatedAt(new \DateTimeImmutable());
-        $donation->setUser($this->getUser());
+    $form = $this->createForm(DonationType::class, $donation);
+    $form->handleRequest($request);
 
-        $form = $this->createForm(DonationType::class, $donation);
-        $form->handleRequest($request);
+    // 🔴 message d'erreur qu'on va afficher dans le Twig
+    $errorMessage = null;
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Mise à jour du montant collecté
+    if ($form->isSubmitted()) {
+        // Vérification MANUELLE du montant
+        if ($donation->getAmount() === null || $donation->getAmount() < 10) {
+            $errorMessage = 'Le montant minimum de don est de 10 MAD.';
+        } elseif ($form->isValid()) {
+            // Tout est bon : on enregistre le don
+
+            // mise à jour du montant collecté
             $campaign->setCollectedAmount(
                 $campaign->getCollectedAmount() + $donation->getAmount()
             );
@@ -52,7 +59,7 @@ class CampaignController extends AbstractController
             $em->persist($donation);
             $em->flush();
 
-            // Redirection vers la page de paiement selon la méthode choisie
+            // redirection vers le paiement
             if ($donation->getPaymentMethod() === 'CARTE') {
                 return $this->redirectToRoute('payment_card', ['id' => $donation->getId()]);
             }
@@ -61,15 +68,18 @@ class CampaignController extends AbstractController
                 return $this->redirectToRoute('payment_paypal', ['id' => $donation->getId()]);
             }
 
-            // Sécurité : si aucune méthode, retour campagne
+            // secours
             return $this->redirectToRoute('campaign_show', ['id' => $campaign->getId()]);
         }
-
-        return $this->render('campaign/donate.html.twig', [
-            'campaign' => $campaign,
-            'form' => $form->createView(),
-        ]);
     }
+
+    return $this->render('campaign/donate.html.twig', [
+        'campaign' => $campaign,
+        'form' => $form->createView(),
+        'errorMessage' => $errorMessage, // 👈 on envoie le message à la vue
+    ]);
+}
+
 
     #[Route('/payment/card/{id}', name: 'payment_card')]
     public function cardPayment(Donation $donation, Request $request): Response
