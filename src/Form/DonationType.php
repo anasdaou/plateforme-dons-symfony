@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 
 class DonationType extends AbstractType
@@ -35,6 +36,9 @@ class DonationType extends AbstractType
                 ],
                 'expanded' => true,   // affiche des boutons radio
                 'multiple' => false,
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez choisir un moyen de paiement.']),
+                ],
             ])
 
         ;

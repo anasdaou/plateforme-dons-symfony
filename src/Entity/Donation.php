@@ -15,19 +15,34 @@ class Donation
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Assert\Positive(message: "Le montant doit être supérieur à 0.")]
+    #[Assert\NotNull(message: "Le montant est obligatoire.")]
+    #[Assert\Positive(message: "Le montant doit être strictement supérieur à 0.")]
     #[Assert\GreaterThanOrEqual(
         value: 10,
         message: "Le montant minimum de don est de 10 MAD."
     )]
+    #[Assert\LessThanOrEqual(
+        value: 1000000,
+        message: "Le montant maximum de don est de 1 000 000 MAD."
+    )]
     private ?float $amount = null;
 
 
-    #[ORM\Column(length: 255)]
-    private ?string $donorName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom du donateur est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères."
+    )]
+    private ?string $donorName = null;
+
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     private ?string $donorEmail = null;
+
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $paymentMethod = null;
