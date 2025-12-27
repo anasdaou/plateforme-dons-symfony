@@ -27,15 +27,24 @@ class CampaignController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
+        // 🔒 1) Si l'utilisateur n'est pas connecté, on l'envoie au login
+        if (!$this->getUser()) {
+            $this->addFlash('warning', 'Vous devez vous connecter ou créer un compte pour effectuer un don.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        // 🔓 2) Si l'utilisateur est connecté, on continue le flux normal de don
         $donation = new Donation();
         $donation->setCampaign($campaign);
         $donation->setCreatedAt(new \DateTimeImmutable());
+        $donation->setUser($this->getUser());
 
         $form = $this->createForm(DonationType::class, $donation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Mettre à jour le montant collecté de la campagne
+            // Mise à jour du montant collecté
             $campaign->setCollectedAmount(
                 $campaign->getCollectedAmount() + $donation->getAmount()
             );
@@ -43,7 +52,7 @@ class CampaignController extends AbstractController
             $em->persist($donation);
             $em->flush();
 
-            // Redirection vers la "page de paiement" selon la méthode choisie
+            // Redirection vers la page de paiement selon la méthode choisie
             if ($donation->getPaymentMethod() === 'CARTE') {
                 return $this->redirectToRoute('payment_card', ['id' => $donation->getId()]);
             }
@@ -52,17 +61,17 @@ class CampaignController extends AbstractController
                 return $this->redirectToRoute('payment_paypal', ['id' => $donation->getId()]);
             }
 
-            // Sécurité : si aucune méthode reconnue, retour à la campagne
+            // Sécurité : si aucune méthode, retour campagne
             return $this->redirectToRoute('campaign_show', ['id' => $campaign->getId()]);
         }
-
 
         return $this->render('campaign/donate.html.twig', [
             'campaign' => $campaign,
             'form' => $form->createView(),
         ]);
     }
-        #[Route('/payment/card/{id}', name: 'payment_card')]
+
+    #[Route('/payment/card/{id}', name: 'payment_card')]
     public function cardPayment(Donation $donation, Request $request): Response
     {
         $campaign = $donation->getCampaign();
@@ -86,6 +95,18 @@ class CampaignController extends AbstractController
         $campaign = $donation->getCampaign();
 
         if ($request->isMethod('POST')) {
+            // Vérifier que les deux champs sont remplis
+            if (
+                empty($request->request->get('paypal_email')) ||
+                empty($request->request->get('paypal_password'))
+            ) {
+                $this->addFlash('danger', 'Veuillez saisir email et mot de passe PayPal.');
+
+                return $this->redirectToRoute('payment_paypal', [
+                    'id' => $donation->getId(),
+                ]);
+            }
+
             // Simulation paiement PayPal
             $this->addFlash('success', 'Paiement PayPal effectué avec succès !');
 
@@ -97,5 +118,4 @@ class CampaignController extends AbstractController
             'campaign' => $campaign,
         ]);
     }
-
 }

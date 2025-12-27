@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Propositions de campagnes{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <h1>Propositions de campagnes</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('info') %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        {% if proposals is empty %}
+            <p>Aucune proposition pour le moment.</p>
+        {% else %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Proposé par</th>
+                        <th>Montant visé</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposal in proposals %}
+                        <tr>
+                            <td>{{ proposal.title }}</td>
+                            <td>{{ proposal.proposerName }} ({{ proposal.proposerEmail }})</td>
+                            <td>{{ proposal.targetAmount }} MAD</td>
+                            <td>{{ proposal.status }}</td>
+                            <td>
+                                {% if proposal.status == 'PENDING' %}
+                                    <a href="{{ path('admin_proposal_validate', {id: proposal.id}) }}"
+                                       class="btn btn-success btn-sm">Valider</a>
+                                    <a href="{{ path('admin_proposal_reject', {id: proposal.id}) }}"
+                                       class="btn btn-danger btn-sm">Refuser</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock %}

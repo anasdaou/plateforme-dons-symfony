@@ -18,6 +18,10 @@ class CampaignProposalController extends AbstractController
     #[Route('/proposer-campagne', name: 'campaign_propose')]
     public function propose(Request $request, EntityManagerInterface $em): Response
     {
+        if (!$this->getUser()) {
+            $this->addFlash('warning', 'Vous devez vous connecter ou créer un compte pour proposer une campagne.');
+            return $this->redirectToRoute('app_login');
+        }
         $proposal = new CampaignProposal();
         $proposal->setCreatedAt(new \DateTimeImmutable());
         $proposal->setStatus('PENDING');

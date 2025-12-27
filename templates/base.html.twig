@@ -10,6 +10,22 @@
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
+        {% if app.user %}
+            <div>
+                Connecté en tant que <strong>{{ app.user.email }}</strong>
+                <a href="{{ path('app_logout') }}">Se déconnecter</a>
+            </div>
+        {% else %}
+            <div>
+                <a href="{{ path('app_login') }}">Se connecter</a>
+            </div>
+        {% endif %}
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('account_donations') }}" class="btn btn-link">
+                Historique de mes dons
+            </a>
+        {% endif %}
+
     </head>
     <body>
         {% block body %}{% endblock %}

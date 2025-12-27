@@ -12,12 +12,22 @@
             <strong>{{ campaign.title }}</strong></p>
 
         <form method="post">
-            <div>
-                <label>Adresse e-mail PayPal :</label><br>
-                <input type="email" name="paypal_email" required>
+
+            <div class="mb-3">
+                <label>Email PayPal</label>
+                <input type="email" name="paypal_email" class="form-control" required>
             </div>
 
-            <button type="submit" class="btn btn-primary mt-3">Payer avec PayPal</button>
+            <div class="mb-3">
+                <label>Mot de passe PayPal</label>
+                <input type="password" name="paypal_password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Confirmer le paiement
+            </button>
+
         </form>
+
     </div>
 {% endblock %}

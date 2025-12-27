@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\DonationRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +15,13 @@ class Donation
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: "Le montant doit être supérieur à 0.")]
+    #[Assert\GreaterThanOrEqual(
+        value: 10,
+        message: "Le montant minimum de don est de 10 MAD."
+    )]
     private ?float $amount = null;
+
 
     #[ORM\Column(length: 255)]
     private ?string $donorName = null;
@@ -31,6 +38,9 @@ class Donation
     #[ORM\ManyToOne(inversedBy: 'donations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Campaign $campaign = null;
+
+    #[ORM\ManyToOne(inversedBy: 'donations')]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -105,6 +115,18 @@ class Donation
     public function setCampaign(?Campaign $campaign): static
     {
         $this->campaign = $campaign;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

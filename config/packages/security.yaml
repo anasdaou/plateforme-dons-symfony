@@ -40,10 +40,11 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
          - { path: ^/login, roles: PUBLIC_ACCESS }
-         - { path: ^/proposer-campagne, roles: PUBLIC_ACCESS }
-         - { path: ^/$, roles: PUBLIC_ACCESS }
+         - { path: ^/register, roles: PUBLIC_ACCESS }
+         - { path: ^/proposer-campagne, roles: ROLE_USER }
+         - { path: ^/mon-compte, roles: ROLE_USER }
          - { path: ^/admin, roles: ROLE_ADMIN }
-      #  - { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/$, roles: PUBLIC_ACCESS }
 
 when@test:
     security:
