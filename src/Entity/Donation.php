@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use Doctrine\DBAL\Types\Types;
 use App\Repository\DonationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
 
 #[ORM\Entity(repositoryClass: DonationRepository::class)]
 class Donation
@@ -23,8 +25,12 @@ class Donation
     )]
     private ?float $amount = null;
 
-
-
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 200,
+        maxMessage: "Le commentaire ne doit pas dépasser {{ limit }} caractères."
+    )]
+    private ?string $comment = null;
 
 
     #[ORM\Column(length: 255)]
@@ -55,6 +61,41 @@ class Donation
     #[ORM\ManyToOne(inversedBy: 'donations')]
     private ?User $user = null;
 
+    #[Assert\Callback]
+    public function validateMaxAmount(ExecutionContextInterface $context): void
+    {
+        if ($this->campaign === null || $this->amount === null) {
+            return;
+        }
+
+        $target = (float) ($this->campaign->getTargetAmount() ?? 0);
+        $collected = (float) ($this->campaign->getCollectedAmount() ?? 0);
+
+        // Si pas d'objectif, on ne limite pas (ou tu peux décider de limiter)
+        if ($target <= 0) {
+            return;
+        }
+
+        $remaining = $target - $collected;
+
+        // Si la campagne est déjà atteinte
+        if ($remaining <= 0) {
+            $context->buildViolation("Cette campagne a déjà atteint son objectif. Vous ne pouvez plus faire de don.")
+                ->atPath('amount')
+                ->addViolation();
+            return;
+        }
+
+        // Si le don dépasse ce qu'il reste à collecter
+        if ($this->amount > $remaining) {
+            $context->buildViolation("Le montant dépasse le reste à collecter ({{ remaining }} MAD).")
+                ->setParameter('{{ remaining }}', number_format($remaining, 2, '.', ' '))
+                ->atPath('amount')
+                ->addViolation();
+        }
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,6 +112,19 @@ class Donation
 
         return $this;
     }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): static
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
 
     public function getDonorName(): ?string
     {

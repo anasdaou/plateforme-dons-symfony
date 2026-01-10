@@ -1,0 +1,32 @@
+/* Navbar plus rassurante : bleu/vert */
+.custom-navbar {
+    background: linear-gradient(90deg, #0f766e, #1d4ed8);
+}
+
+.custom-navbar .navbar-brand,
+.custom-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.custom-navbar .nav-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.custom-navbar .dropdown-menu {
+    border-radius: 12px;
+}
+
+.footer-soft {
+    background: #0f172a; /* bleu très foncé */
+}
+
+/* ===== Dashboard Admin ===== */
+.kpi-card {
+  border-radius: 14px;
+}
+
+.kpi-icon {
+  font-size: 26px;
+  opacity: 0.85;
+}

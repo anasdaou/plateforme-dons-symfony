@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confidentialité – Mon profil{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <h1 class="h4 mb-4">Mes informations personnelles</h1>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {{ form_start(profileForm) }}
+
+                    <div class="mb-3">
+                        {{ form_label(profileForm.firstName) }}
+                        {{ form_widget(profileForm.firstName, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(profileForm.firstName) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(profileForm.lastName) }}
+                        {{ form_widget(profileForm.lastName, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(profileForm.lastName) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(profileForm.email) }}
+                        {{ form_widget(profileForm.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(profileForm.email) }}
+                    </div>
+
+                    <hr>
+
+                    <p class="small text-muted mb-2">
+                        Si vous souhaitez changer votre mot de passe, remplissez les champs ci-dessous.
+                        Sinon, laissez-les vides.
+                    </p>
+
+                    <div class="mb-3">
+                        {{ form_label(profileForm.currentPassword) }}
+                        {{ form_widget(profileForm.currentPassword, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(profileForm.currentPassword) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(profileForm.newPassword) }}
+                        {{ form_widget(profileForm.newPassword, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(profileForm.newPassword) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-2">
+                        Enregistrer les modifications
+                    </button>
+
+                {{ form_end(profileForm) }}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

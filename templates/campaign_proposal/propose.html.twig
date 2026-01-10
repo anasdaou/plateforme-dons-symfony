@@ -3,27 +3,98 @@
 {% block title %}Proposer une campagne{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
-        <a href="{{ path('app_home') }}">&larr; Retour à l’accueil</a>
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-        <h1 class="mt-3">Proposer une nouvelle campagne</h1>
+<div class="container my-4">
 
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">
-                {{ message }}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h1 class="h4 mb-3 text-center">Proposer une nouvelle campagne</h1>
+
+                    <p class="text-muted small mb-4 text-center">
+                        Décrivez clairement votre campagne pour qu’elle puisse être étudiée
+                        et éventuellement publiée sur la plateforme.
+                    </p>
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+                        <div class="mb-3">
+                            {{ form_label(form.title, 'Titre de la campagne') }}
+                            {{ form_widget(form.title, {
+                                attr: { placeholder: 'Ex : Soutien aux familles touchées par le séisme' }
+                            }) }}
+                            {{ form_errors(form.title) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description détaillée') }}
+                            {{ form_widget(form.description, {
+                                attr: {
+                                    rows: 5,
+                                    placeholder: 'Expliquez le contexte, les bénéficiaires, l’utilisation des dons...'
+                                }
+                            }) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.targetAmount, 'Montant visé (MAD)') }}
+                            {{ form_widget(form.targetAmount, {
+                                attr: { placeholder: 'Ex : 150000' }
+                            }) }}
+                            {{ form_errors(form.targetAmount) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.proposerName, 'Votre nom') }}
+                                {{ form_widget(form.proposerName, {
+                                    attr: { placeholder: 'Nom et prénom' }
+                                }) }}
+                                {{ form_errors(form.proposerName) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.proposerEmail, 'Votre email') }}
+                                {{ form_widget(form.proposerEmail, {
+                                    attr: { placeholder: 'exemple@domaine.com' }
+                                }) }}
+                                {{ form_errors(form.proposerEmail) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.imageFile, 'Image de la campagne') }}
+                            {{ form_widget(form.imageFile) }}
+                            {{ form_errors(form.imageFile) }}
+
+                            <p class="form-text">
+                                Formats acceptés : JPEG, PNG – Taille max : 4 Mo.<br>
+                                Pour un bon rendu, utilisez une image horizontale
+                                (par ex. 1200 x 600 px) claire et bien cadrée.
+                            </p>
+                        </div>
+
+                        <button class="btn btn-primary w-100 mt-2">
+                            Envoyer la proposition
+                        </button>
+
+                    {{ form_end(form) }}
+
+                </div>
             </div>
-        {% endfor %}
 
-        <div class="mt-4">
-            {{ form_start(form) }}
-                {{ form_row(form.title) }}
-                {{ form_row(form.description) }}
-                {{ form_row(form.targetAmount) }}
-                {{ form_row(form.proposerName) }}
-                {{ form_row(form.proposerEmail) }}
-
-                <button class="btn btn-primary mt-3">Envoyer la proposition</button>
-            {{ form_end(form) }}
         </div>
     </div>
+
+</div>
 {% endblock %}

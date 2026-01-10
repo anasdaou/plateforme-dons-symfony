@@ -3,32 +3,135 @@
 {% block title %}{{ campaign.title }}{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
+    <div class="container my-4">
 
-        <a href="{{ path('app_home') }}">&larr; Retour aux campagnes</a>
+        <div class="card shadow-sm">
 
-        <h1 class="mt-3">{{ campaign.title }}</h1>
+            {# ---- IMAGE ---- #}
+            {% if campaign.imageUrl %}
+                <img
+                    src="{{ campaign.imageUrl }}"
+                    class="card-img-top"
+                    alt="Image de la campagne {{ campaign.title }}"
+                    style="max-height: 300px; object-fit: cover;"
+                >
+            {% else %}
+                <img
+                    src="{{ asset('images/default-campaign.jpg') }}"
+                    class="card-img-top"
+                    alt="Image par défaut"
+                    style="max-height: 300px; object-fit: cover;"
+                >
+            {% endif %}
 
-        <p>{{ campaign.description }}</p>
+            <div class="card-body">
 
-        <p>
-            Objectif : <strong>{{ campaign.targetAmount }} MAD</strong><br>
-            Collecté : <strong>{{ campaign.collectedAmount }} MAD</strong>
-        </p>
+                <h1 class="h4 mb-3">{{ campaign.title }}</h1>
 
-        {% set percent = 0 %}
-        {% if campaign.targetAmount > 0 %}
-            {% set percent = (campaign.collectedAmount / campaign.targetAmount * 100)|round(0, 'floor') %}
+                <p class="text-muted">
+                    {{ campaign.description }}
+                </p>
+
+                {# ---- Progression ---- #}
+                {% set percent = 0 %}
+                {% if campaign.targetAmount > 0 %}
+                    {% set percent = (campaign.collectedAmount / campaign.targetAmount * 100)|round(0, 'floor') %}
+                {% endif %}
+
+                <div class="mb-2">
+                    <strong>Objectif :</strong> {{ campaign.targetAmount }} MAD<br>
+                    <strong>Collecté :</strong> {{ campaign.collectedAmount }} MAD
+                </div>
+
+                <div class="progress mb-2" style="height: 10px;">
+                    <div
+                        class="progress-bar"
+                        style="width: {{ percent }}%;"
+                    ></div>
+                </div>
+
+                <small class="text-muted">
+                    Progression : {{ percent }}%
+                </small>
+
+                <hr>
+
+                {% if campaign.status == 'EN_COURS' %}
+                    <a href="{{ path('campaign_donate', {id: campaign.id}) }}"
+                       class="btn btn-success">
+                        Faire un don
+                    </a>
+
+                {% elseif campaign.status == 'TERMINEE' %}
+                    <div class="alert alert-success mt-3">
+                        Cette campagne a atteint son objectif. Les dons sont clôturés.
+                    </div>
+
+                {% elseif campaign.status == 'SUPPRIMEE' %}
+                    <div class="alert alert-warning mt-3">
+                        Cette campagne n’est plus disponible sur la plateforme.
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mt-3">
+                        Cette campagne n’est pas disponible pour les dons pour le moment.
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        {# ----------------- AVIS DES DONATEURS ----------------- #}
+        <hr class="mt-4">
+
+        <h2 class="h5 mt-3 mb-3">Avis des donateurs</h2>
+
+        {# On récupère uniquement les dons qui ont un commentaire #}
+        {% set avis = [] %}
+        {% for donation in campaign.donations %}
+            {% if donation.comment %}
+                {% set avis = avis|merge([donation]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if avis is empty %}
+            <p class="text-muted">Aucun avis n’a encore été laissé pour cette campagne.</p>
+        {% else %}
+            <ul class="list-group mb-3">
+                {# tri du plus récent au plus ancien (si createdAt existe) #}
+                {% for donation in avis|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>
+                                {% if donation.user %}
+                                    {% set u = donation.user %}
+                                    {% if u.firstName or u.lastName %}
+                                        {{ u.firstName }} {{ u.lastName }}
+                                    {% elseif u.email %}
+                                        {{ u.email }}
+                                    {% else %}
+                                        Donateur
+                                    {% endif %}
+                                {% else %}
+                                    Donateur
+                                {% endif %}
+                            </strong>
+
+                            {% if donation.createdAt is defined %}
+                                <small class="text-muted">
+                                    {{ donation.createdAt|date('d/m/Y H:i') }}
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <p class="mb-1 mt-1">{{ donation.comment }}</p>
+
+                        <small class="text-muted">
+                            Don de {{ donation.amount }} MAD
+                        </small>
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
-
-        <p>Progression : {{ percent }}%</p>
-
-        <hr>
-
-        <a href="{{ path('campaign_donate', {id: campaign.id}) }}" class="btn btn-primary">
-            Faire un don
-        </a>
-
 
     </div>
 {% endblock %}

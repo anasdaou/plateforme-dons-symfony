@@ -3,54 +3,155 @@
 {% block title %}Faire un don - {{ campaign.title }}{% endblock %}
 
 {% block body %}
-    {% form_theme form 'bootstrap_5_layout.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-    <div class="container my-5">
-        <a href="{{ path('campaign_show', {id: campaign.id}) }}" class="btn btn-link mb-3">
-            &larr; Retour à la campagne
-        </a>
+<div class="container my-4">
 
-        <h1 class="mb-4">Faire un don pour : {{ campaign.title }}</h1>
+    <div class="row">
+        <div class="col-lg-5 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">{{ campaign.title }}</h2>
+                    <p class="text-muted small">
+                        {{ campaign.description|u.truncate(200, '...') }}
+                    </p>
 
-        <p class="text-muted">
-            Objectif : <strong>{{ campaign.targetAmount }} MAD</strong> –
-            Collecté : <strong>{{ campaign.collectedAmount }} MAD</strong>
-        </p>
+                    {% set target = campaign.targetAmount ?: 0 %}
+                    {% set collected = campaign.collectedAmount ?: 0 %}
 
-        <div class="card mt-4">
-            <div class="card-body">
+                    {# ✅ remaining vient du controller (sécurité), sinon on le calcule #}
+                    {% if remaining is not defined %}
+                        {% set remaining = target - collected %}
+                        {% if remaining < 0 %}
+                            {% set remaining = 0 %}
+                        {% endif %}
+                    {% endif %}
 
-                {# 🔴 message d'erreur personnalisé venant du contrôleur #}
-                {% if errorMessage is defined and errorMessage %}
-                    <div class="alert alert-danger mb-3">
-                        {{ errorMessage }}
+                    {% if target > 0 %}
+                        {% set progress = (collected / target * 100)|round(0, 'floor') %}
+                        {% if progress > 100 %}
+                            {% set progress = 100 %}
+                        {% endif %}
+                    {% else %}
+                        {% set progress = 0 %}
+                    {% endif %}
+
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small">
+                            <span>Collecté : {{ collected }} MAD</span>
+                            <span>Objectif : {{ target }} MAD</span>
+                        </div>
+
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: {{ progress }}%;"
+                                 aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <div class="text-end small text-muted mt-1">
+                            {{ progress }} %
+                        </div>
+
+                        <div class="mt-2 small">
+                            <strong>Reste à collecter :</strong> {{ remaining }} MAD
+                        </div>
                     </div>
-                {% endif %}
 
-                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    {% if remaining <= 50 and target > 0 %}
+                        <div class="alert alert-warning small mt-3 mb-0">
+                            Cette campagne est proche de son objectif. Merci de vérifier le montant avant de continuer.
+                        </div>
+                    {% endif %}
 
-                    <div class="mb-3">
-                        {{ form_row(form.amount) }}
-                    </div>
+                    <p class="small text-muted mt-3 mb-0">
+                        Montant minimum de don : <strong>10 MAD</strong>.<br>
+                        Vous ne pouvez pas dépasser le montant restant à collecter.
+                    </p>
+                </div>
+            </div>
+        </div>
 
-                    <div class="mb-3">
-                        {{ form_row(form.donorName) }}
-                    </div>
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
 
-                    <div class="mb-3">
-                        {{ form_row(form.donorEmail) }}
-                    </div>
+                    <h2 class="h5 mb-3">Informations de votre don</h2>
 
-                    <div class="mb-3">
-                        {{ form_row(form.paymentMethod) }}
-                    </div>
+                    {% if errorMessage %}
+                        <div class="alert alert-danger">
+                            {{ errorMessage }}
+                        </div>
+                    {% endif %}
 
-                    <button class="btn btn-primary mt-3">
-                        Continuer vers le paiement
-                    </button>
+                    {% if form_errors(form) %}
+                        <div class="alert alert-danger">
+                            {{ form_errors(form) }}
+                        </div>
+                    {% endif %}
 
-                {{ form_end(form) }}
+                    {{ form_start(form) }}
+
+                        <div class="mb-3">
+                            {{ form_label(form.amount, 'Montant du don (MAD)') }}
+                            {{ form_widget(form.amount, {
+                                attr: {
+                                    class: 'form-control',
+                                    min: 10,
+                                    step: 1,
+                                    max: remaining,
+                                    placeholder: 'Ex : 200'
+                                }
+                            }) }}
+                            <div class="form-text">
+                                Maximum autorisé : <strong>{{ remaining }} MAD</strong>
+                            </div>
+                            {{ form_errors(form.amount) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.donorName, 'Nom du donateur') }}
+                                {{ form_widget(form.donorName, { attr: { placeholder: 'Votre nom complet' } }) }}
+                                {{ form_errors(form.donorName) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.donorEmail, 'Email du donateur') }}
+                                {{ form_widget(form.donorEmail, { attr: { placeholder: 'exemple@domaine.com' } }) }}
+                                {{ form_errors(form.donorEmail) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.comment, 'Votre message / avis (optionnel)') }}
+                            {{ form_widget(form.comment, {
+                                attr: {
+                                    class: 'form-control',
+                                    rows: 3,
+                                    maxlength: 200,
+                                    placeholder: 'Vous pouvez laisser un mot de soutien (max 200 caractères)...'
+                                }
+                            }) }}
+                            {{ form_errors(form.comment) }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Moyen de paiement</label>
+                            <div class="border rounded p-2">
+                                {{ form_widget(form.paymentMethod) }}
+                            </div>
+                            {{ form_errors(form.paymentMethod) }}
+                        </div>
+
+                        <button class="btn btn-success w-100 mt-2">
+                            Continuer vers le paiement
+                        </button>
+
+                    {{ form_end(form) }}
+
+                </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

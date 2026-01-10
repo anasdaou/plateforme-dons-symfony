@@ -1,0 +1,245 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Admin - Campagnes{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Dashboard — Administration des campagnes</h1>
+            <p class="text-muted mb-0">Vue d’ensemble des campagnes et des dons</p>
+        </div>
+    </div>
+
+    {# ====== KPIs (cartes) ====== #}
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Nombre total de campagnes</div>
+                            <div class="display-6 fw-bold">{{ totalCampaigns }}</div>
+                        </div>
+                        <span class="kpi-icon">📌</span>
+                    </div>
+                    <div class="small text-muted mt-2">
+                        En cours : <strong>{{ totalEnCours }}</strong> • Terminées : <strong>{{ totalTerminees }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Montant total collecté</div>
+                            <div class="display-6 fw-bold">{{ totalCollecte|number_format(0, '.', ' ') }} MAD</div>
+                        </div>
+                        <span class="kpi-icon">💰</span>
+                    </div>
+
+                    <div class="small text-muted mt-2">
+                        Objectif global : <strong>{{ totalObjectif|number_format(0, '.', ' ') }} MAD</strong>
+                    </div>
+
+                    {% set progress = progressGlobal %}
+                    {% if progress > 100 %}{% set progress = 100 %}{% endif %}
+
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar"
+                             style="width: {{ progress }}%;"
+                             aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="small text-muted mt-1">{{ progressGlobal }}% (plafonné à 100% sur la barre)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Campagnes par statut</div>
+                            <div class="mt-2">
+                                <span class="badge rounded-pill text-bg-success me-1">En cours {{ totalEnCours }}</span>
+                                <span class="badge rounded-pill text-bg-primary me-1">Terminées {{ totalTerminees }}</span>
+                                <span class="badge rounded-pill text-bg-secondary">Retirées {{ totalSupprimees }}</span>
+                            </div>
+                        </div>
+                        <span class="kpi-icon">📊</span>
+                    </div>
+
+                    <div class="small text-muted mt-2">Répartition visuelle dans le graphique</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Nombre total de dons</div>
+                            <div class="display-6 fw-bold">{{ totalDonations }}</div>
+                        </div>
+                        <span class="kpi-icon">🤝</span>
+                    </div>
+                    <div class="small text-muted mt-2">
+                        Moyenne par campagne : <strong>
+                            {% if totalCampaigns > 0 %}
+                                {{ (totalDonations / totalCampaigns)|number_format(1, '.', ' ') }}
+                            {% else %}0{% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ====== Graphiques ====== #}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Progression globale (objectif vs collecte)</h2>
+                    <canvas id="progressChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Répartition des campagnes</h2>
+                    <canvas id="statusChart" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ====== Table ====== #}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h2 class="h6 mb-0">Liste des campagnes</h2>
+                <span class="text-muted small">Tri : plus récentes en premier</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Titre</th>
+                            <th>Statut</th>
+                            <th class="text-nowrap">Objectif</th>
+                            <th class="text-nowrap">Collecté</th>
+                            <th class="text-nowrap">Progression</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in campaigns %}
+                            {% set target = campaign.targetAmount ?: 0 %}
+                            {% set collected = campaign.collectedAmount ?: 0 %}
+                            {% set percent = 0 %}
+                            {% if target > 0 %}
+                                {% set percent = (collected / target * 100)|round(0, 'floor') %}
+                            {% endif %}
+
+                            {% set barPercent = percent %}
+                            {% if barPercent > 100 %}{% set barPercent = 100 %}{% endif %}
+
+                            <tr>
+                                <td class="fw-semibold">{{ campaign.title }}</td>
+                                <td>
+                                    {% if campaign.status == 'EN_COURS' %}
+                                        <span class="badge text-bg-success">En cours</span>
+                                    {% elseif campaign.status == 'TERMINEE' %}
+                                        <span class="badge text-bg-primary">Terminée</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Retirée</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ target|number_format(0, '.', ' ') }} MAD</td>
+                                <td>{{ collected|number_format(0, '.', ' ') }} MAD</td>
+                                <td style="min-width: 180px;">
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar"
+                                             style="width: {{ barPercent }}%;"></div>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        {{ percent }}% (barre plafonnée à 100%)
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('campaign_show', {id: campaign.id}) }}">
+                                        Voir
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script>
+        // Données Twig -> JS
+        const totalCollecte = {{ totalCollecte|default(0) }};
+        const totalObjectif = {{ totalObjectif|default(0) }};
+        const enCours = {{ totalEnCours|default(0) }};
+        const terminees = {{ totalTerminees|default(0) }};
+        const retirees = {{ totalSupprimees|default(0) }};
+
+        // Progress Chart
+        const progressCtx = document.getElementById('progressChart');
+        new Chart(progressCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Collecté', 'Objectif'],
+                datasets: [{
+                    label: 'Montant (MAD)',
+                    data: [totalCollecte, totalObjectif]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['En cours', 'Terminées', 'Retirées'],
+                datasets: [{
+                    data: [enCours, terminees, retirees]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    </script>
+{% endblock %}

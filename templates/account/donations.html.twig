@@ -24,14 +24,20 @@
                 {% for donation in donations %}
                     <tr>
                         <td>{{ donation.createdAt|date('d/m/Y H:i') }}</td>
-                        <td>
-                            <a href="{{ path('campaign_show', {id: donation.campaign.id}) }}">
-                                {{ donation.campaign.title }}
-                            </a>
-                        </td>
+                        <td>{{ donation.campaign.title }}</td>
                         <td>{{ donation.amount }} MAD</td>
+                        <td>
+                            {% if donation.campaign.status == 'EN_COURS' %}
+                                <span class="badge bg-primary">Campagne en cours</span>
+                            {% elseif donation.campaign.status == 'TERMINEE' %}
+                                <span class="badge bg-success">Campagne terminée</span>
+                            {% elseif donation.campaign.status == 'SUPPRIMEE' %}
+                                <span class="badge bg-secondary">Campagne retirée</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
+
             </tbody>
         </table>
 

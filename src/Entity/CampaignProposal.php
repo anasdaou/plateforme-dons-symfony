@@ -17,6 +17,9 @@ class CampaignProposal
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageFilename = null;
+
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
@@ -35,6 +38,8 @@ class CampaignProposal
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    
+
     public function getId(): ?int
     {
         return $this->id;
@@ -48,6 +53,18 @@ class CampaignProposal
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getImageFilename(): ?string
+    {
+        return $this->imageFilename;
+    }
+
+    public function setImageFilename(?string $imageFilename): static
+    {
+        $this->imageFilename = $imageFilename;
 
         return $this;
     }

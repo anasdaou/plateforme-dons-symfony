@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement réussi{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+
+                <h1 class="h4 mb-3">✅ Paiement réussi</h1>
+
+                <p class="text-muted mb-3">
+                    Merci pour votre don de <strong>{{ donation.amount }} MAD</strong><br>
+                    pour la campagne : <strong>{{ campaign.title }}</strong>
+                </p>
+
+                <div class="d-grid gap-2">
+                    <a class="btn btn-success" href="{{ path('app_home') }}">
+                        Retour à l’accueil
+                    </a>
+
+                    <a class="btn btn-outline-dark" href="{{ path('campaign_show', {id: campaign.id}) }}">
+                        Revenir à la campagne
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

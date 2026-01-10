@@ -11,6 +11,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+
 
 class DonationType extends AbstractType
 {
@@ -50,6 +52,16 @@ class DonationType extends AbstractType
                     new NotBlank(['message' => 'Veuillez choisir un moyen de paiement.']),
                 ],
             ])
+            ->add('comment', TextareaType::class, [
+                'label'    => 'Votre message / avis (optionnel)',
+                'required' => false,
+                'attr'     => [
+                    'rows' => 3,
+                    'maxlength' => 200,
+                    'placeholder' => 'Vous pouvez laisser un mot de soutien (max 200 caractères)...',
+                ],
+            ])
+
         ;
     }
 

@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes dons{% endblock %}
+
+{% block body %}
+
+<div class="container my-5">
+
+    <h1 class="h4 mb-4">Historique de mes dons</h1>
+
+    {% if donations is empty %}
+        <div class="alert alert-info">
+            Vous n'avez effectué aucun don pour le moment.
+        </div>
+    {% else %}
+
+        <p class="mb-3">
+            Montant total donné :
+            <strong>{{ totalAmount }} MAD</strong>
+        </p>
+
+        <table class="table table-bordered align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Campagne</th>
+                    <th>Montant</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for donation in donations %}
+                {% set campaign = donation.campaign %}
+
+                <tr>
+                    <td>
+                        <strong>{{ campaign.title }}</strong>
+                    </td>
+
+                    <td>
+                        <strong>{{ donation.amount }} MAD</strong>
+                    </td>
+
+                    <td>
+                        {{ donation.createdAt|date('d/m/Y H:i') }}
+                    </td>
+
+                    <td>
+                        {% if campaign.status == 'EN_COURS' %}
+                            <span class="badge bg-success">En cours</span>
+                        {% elseif campaign.status == 'TERMINEE' %}
+                            <span class="badge bg-primary">Terminée</span>
+                        {% elseif campaign.status == 'SUPPRIMEE' %}
+                            <span class="badge bg-danger">Retirée</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inconnue</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-end">
+                        {% if campaign.status == 'SUPPRIMEE' %}
+                            <span class="text-muted small">
+                                (campagne retirée)
+                            </span>
+                        {% else %}
+                            <a href="{{ path('campaign_show', {id: campaign.id}) }}"
+                               class="btn btn-sm btn-outline-dark">
+                                Voir la campagne
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

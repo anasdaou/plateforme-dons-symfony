@@ -1,62 +1,168 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Plateforme de dons{% endblock %}
+{% block title %}Accueil - Plateforme de dons{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
-        <h1 class="mb-4">Campagnes de dons</h1>
-            <a href="{{ path('campaign_propose') }}" class="btn btn-success mb-4">
-                Proposer une campagne
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Campagnes de dons</h1>
+            <p class="text-muted mb-0">
+                Découvrez les campagnes en cours et celles qui ont atteint leur objectif.
+            </p>
+        </div>
+
+        <div>
+            <a href="{{ path('campaign_propose') }}" class="btn btn-primary">
+                + Proposer une campagne
             </a>
-        {% if campaigns is empty %}
-            <div class="alert alert-info">
-                Aucune campagne pour le moment.
+        </div>
+    </div>
+
+    {# 🔍 Recherche + 🔽 Tri + 🎯 Catégorie #}
+    <form method="get" class="mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input
+                    type="text"
+                    name="q"
+                    class="form-control"
+                    placeholder="Rechercher une campagne..."
+                    value="{{ searchTerm ?? '' }}"
+                >
             </div>
-        {% else %}
-            <div class="row">
-                {% for campaign in campaigns %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ campaign.title }}</h5>
-                                <p class="card-text">
-                                    {{ campaign.description|slice(0, 120) }}{% if campaign.description|length > 120 %}...{% endif %}
-                                </p>
+            <div class="col-md-3">
+                <select name="sort" class="form-select">
+                    <option value="">Trier par...</option>
+                    <option value="amount_desc" {{ sort == 'amount_desc' ? 'selected' }}>
+                        Montant objectif (du plus cher au moins cher)
+                    </option>
+                    <option value="amount_asc" {{ sort == 'amount_asc' ? 'selected' }}>
+                        Montant objectif (du moins cher au plus cher)
+                    </option>
+                    <option value="title_asc" {{ sort == 'title_asc' ? 'selected' }}>
+                        Nom (A → Z)
+                    </option>
+                    <option value="title_desc" {{ sort == 'title_desc' ? 'selected' }}>
+                        Nom (Z → A)
+                    </option>
+                </select>
+            </div>
 
-                                {# Calcul du pourcentage de progression #}
-                                {% set percent = 0 %}
-                                {% if campaign.targetAmount > 0 %}
-                                    {% set percent = (campaign.collectedAmount / campaign.targetAmount * 100)|round(0, 'floor') %}
-                                {% endif %}
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-outline-secondary" type="submit">
+                    Rechercher / Filtrer
+                </button>
+            </div>
+        </div>
+    </form>
 
-                                <p class="mb-1">
-                                    Objectif : <strong>{{ campaign.targetAmount }} MAD</strong><br>
-                                    Collecté : <strong>{{ campaign.collectedAmount }} MAD</strong>
-                                </p>
+    {% if campaigns is empty %}
+        <div class="alert alert-info">
+            {% if searchTerm or selectedCategory %}
+                Aucune campagne ne correspond à vos critères.
+            {% else %}
+                Aucune campagne n’est disponible pour le moment.
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for campaign in campaigns %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if campaign.imageUrl %}
+                            <img
+                                src="{{ campaign.imageUrl }}"
+                                class="card-img-top"
+                                alt="Image de la campagne {{ campaign.title }}"
+                                style="height: 180px; object-fit: cover;"
+                            >
+                        {% else %}
+                            <img
+                                src="{{ asset('images/default-campaign.jpg') }}"
+                                class="card-img-top"
+                                alt="Image par défaut"
+                                style="height: 180px; object-fit: cover;"
+                            >
+                        {% endif %}
 
-                                <div class="progress mb-2">
-                                    <div class="progress-bar" role="progressbar"
-                                         style="width: {{ percent }}%;"
-                                         aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
-                                        {{ percent }}%
-                                    </div>
+                        <div class="card-body d-flex flex-column">
+
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">{{ campaign.title }}</h5>
+
+                                <div class="text-end">
+                                    {% if campaign.status == 'EN_COURS' %}
+                                        <span class="badge bg-success mt-1">En cours</span>
+                                    {% elseif campaign.status == 'TERMINEE' %}
+                                        <span class="badge bg-primary mt-1">Objectif atteint</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <p class="card-text text-muted small">
+                                {{ campaign.description|length > 120
+                                    ? campaign.description|slice(0, 120) ~ '...'
+                                    : campaign.description
+                                }}
+                            </p>
+
+                            {% set target = campaign.targetAmount ?: 0 %}
+                            {% set collected = campaign.collectedAmount ?: 0 %}
+                            {% if target > 0 %}
+                                {% set progress = (collected / target * 100)|round(0, 'floor') %}
+                            {% else %}
+                                {% set progress = 0 %}
+                            {% endif %}
+
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span>Collecté : {{ collected }} MAD</span>
+                                    <span>Objectif : {{ target }} MAD</span>
                                 </div>
 
-                                {# On mettra les vrais liens plus tard #}
-                                <a href="{{ path('campaign_donate', {id: campaign.id}) }}">
-                                    Faire un don
-                                </a>
+                                <div class="progress" style="height: 8px;">
+                                    <div
+                                        class="progress-bar"
+                                        role="progressbar"
+                                        style="width: {{ progress }}%;"
+                                        aria-valuenow="{{ progress }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                    ></div>
+                                </div>
 
-                                <a href="{{ path('campaign_show', { id: campaign.id }) }}">
+                                <div class="text-end small text-muted mt-1">
+                                    {{ progress }} %
+                                </div>
+                            </div>
+
+                            <div>
+                            
+                            </div>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <a href="{{ path('campaign_show', {id: campaign.id}) }}"
+                                   class="btn btn-sm btn-outline-secondary">
                                     Détails
                                 </a>
 
-
+                                {% if campaign.status == 'EN_COURS' %}
+                                    <a href="{{ path('campaign_donate', {id: campaign.id}) }}"
+                                       class="btn btn-sm btn-success">
+                                        Faire un don
+                                    </a>
+                                {% elseif campaign.status == 'TERMINEE' %}
+                                    <span class="text-muted small">
+                                        Campagne clôturée
+                                    </span>
+                                {% endif %}
                             </div>
+
+
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}

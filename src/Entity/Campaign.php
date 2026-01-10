@@ -37,6 +37,8 @@ class Campaign
     #[ORM\Column(length: 50)]
     private ?string $status = null;
 
+    
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -45,6 +47,9 @@ class Campaign
      */
     #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'campaign')]
     private Collection $donations;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageUrl = null;
 
     public function __construct()
     {
@@ -140,6 +145,7 @@ class Campaign
         return $this;
     }
 
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -179,6 +185,18 @@ class Campaign
                 $donation->setCampaign(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): static
+    {
+        $this->imageUrl = $imageUrl;
 
         return $this;
     }

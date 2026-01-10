@@ -1,31 +1,44 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Paiement par carte{% endblock %}
+{% block title %}Paiement par carte - {{ campaign.title }}{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
-        <a href="{{ path('campaign_show', {id: campaign.id}) }}">&larr; Retour à la campagne</a>
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
 
-        <h1 class="mt-3">Paiement par carte bancaire</h1>
+                <h1 class="h5 mb-3 text-center">Paiement par carte bancaire</h1>
 
-        <p>Vous allez payer <strong>{{ donation.amount }} MAD</strong> pour la campagne :
-            <strong>{{ campaign.title }}</strong></p>
+                <p class="text-muted small text-center mb-3">
+                    Paiement pour la campagne :
+                    <strong>{{ campaign.title }}</strong><br>
+                    Montant : <strong>{{ donation.amount }} MAD</strong>
+                </p>
 
-        <form method="post">
-            <div>
-                <label>Numéro de carte :</label><br>
-                <input type="text" name="card_number" required>
+                <div class="alert alert-info small">
+                    <strong>Note :</strong> ce paiement est une <u>simulation</u>.
+                    Aucune vraie transaction bancaire n’est effectuée.
+                </div>
+
+                {{ form_start(form) }}
+                    {{ form_row(form.cardNumber) }}
+                    {{ form_row(form.expiration) }}
+                    {{ form_row(form.cvv) }}
+
+                    <button class="btn btn-success w-100 mt-2" type="submit">
+                        Confirmer le paiement
+                    </button>
+                {{ form_end(form) }}
+
+                <p class="text-center mt-3 mb-0">
+                    <a href="{{ path('campaign_show', {id: campaign.id}) }}">
+                        Annuler et revenir à la campagne
+                    </a>
+                </p>
+
             </div>
-            <div>
-                <label>Date d'expiration :</label><br>
-                <input type="text" name="card_expiry" placeholder="MM/AA" required>
-            </div>
-            <div>
-                <label>Cryptogramme (CVV) :</label><br>
-                <input type="text" name="card_cvv" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary mt-3">Payer</button>
-        </form>
+        </div>
     </div>
+</div>
 {% endblock %}
