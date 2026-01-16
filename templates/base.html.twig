@@ -74,7 +74,12 @@
             <div class="d-flex align-items-center">
                 {% if app.user %}
                     <span class="me-3 text-white small">
-                        Connecté : <strong>{{ app.user.email }}</strong>
+                        Connecté :
+                        {% if app.user.firstName is not empty or app.user.lastName is not empty %}
+                            {{ app.user.firstName }} {{ app.user.lastName }}
+                        {% else %}
+                            {{ app.user.email }}
+                        {% endif %}
                     </span>
                     <a href="{{ path('app_logout') }}" class="btn btn-outline-light btn-sm">
                         Déconnexion
